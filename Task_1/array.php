@@ -17,7 +17,7 @@
  $assoc_array = array("jmeno" => "Tomáš", "prijmeni" => "Polešovský",
      "email" => "mujEmail@gmail.cz", "telefon" => "506775123");
  foreach ($assoc_array as $item => $value){
-     echo '<br> Hodnota komponenty formulare "' . $item. ' je "' . $value. '"';
+     echo '<br> Hodnota komponenty formulare "' . $item. '" je "' . $value. '"';
  }
 ?>
 

@@ -27,9 +27,8 @@ function fillAFile($filename, $url) {
             fwrite($file, chr(255).chr(254).mb_convert_encoding($film->nodeValue . "\n", 'UTF-16LE', 'UTF-8'));
         }
         fwrite($file, chr(255).chr(254).mb_convert_encoding("\n", 'UTF-16LE', 'UTF-8'));
-        $item_count += 1;
+        $item_count++;
     }
-    
     fclose($file);
 }
 
