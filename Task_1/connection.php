@@ -8,9 +8,13 @@ function openCon() {
     $dsn = 'mysql:dbname=' . SQL_DBNAME . ';host=' . SQL_HOST . '';
     $user = SQL_USERNAME;
     $password = SQL_PASSWORD;
-    
-     $con = new PDO($dsn, "$user", "$password");
-     return $con;
+    try {
+        $con = new PDO($dsn, $user, $password);
+        $con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $e) {
+        die('Connection failed: ' . $e->getMessage());
+    }
+    return $con;
 }
 
 function closeCon($con) {
