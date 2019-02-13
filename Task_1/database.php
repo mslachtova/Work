@@ -1,32 +1,27 @@
 <?php
 include 'connection.php';
-include 'cinema_program.php';
+include 'parse_url.php';
 
 function createTables($conn) {
-    $sql = "CREATE TABLE Date (
-                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                day VARCHAR(10) NOT NULL default '',
-                date VARCHAR(10) NOT NULL default ''
-            );";
-    $sql .= "CREATE TABLE Cinemas (
-                cinema_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100) NOT NULL default ''
-            );";
-    $sql .= "CREATE TABLE Films (
+    $sql = "CREATE TABLE IF NOT EXISTS Films (
                 film_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100) NOT NULL default ''
+                name VARCHAR(100) NOT NULL default '',
+                release_year INT UNSIGNED NOT NULL
             );";
-    $sql .= "CREATE TABLE Cinema_film (
-                cinema_id INT UNSIGNED,
-                film_id INT UNSIGNED,
-                PRIMARY KEY (cinema_id, film_id)
+    
+    $sql .= "CREATE TABLE IF NOT EXISTS Showtimes (
+                date DATE NOT NULL,
+                cinema_name VARCHAR(100) NOT NULL default '',
+                film_id INT UNSIGNED NOT NULL,
+                PRIMARY KEY (date, cinema_name, film_id)
             );";
-    $conn->exec($sql);    
+    
+    $conn->exec($sql);
 }
 
 function insertCinema($conn, $line, $line_with_cinema) {
     if (!$line_with_cinema) {
-        return false;  
+        return false;
     }
     $sql = "INSERT INTO Cinemas (name) VALUES ($line)";
     $conn->exec($sql);
@@ -96,7 +91,7 @@ if (isset($_POST["save"])) {
         $file = fopen($filename, "r");
         insertInTables($conn, $file);
         fclose($file);
-            
+        
     } catch (PDOException $e) {
         echo "here";
         die('Connection failed: ' . $e->getMessage());
