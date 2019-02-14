@@ -47,6 +47,23 @@ function insertInTables($conn, $url) {
     }
 }
 
+function printData($conn) {
+    $dates = $conn->query("SELECT DISTINCT date FROM Showtimes");
+    while ($date = $dates->fetch(PDO::FETCH_NUM)) {
+        echo date_format(date_create($date[0]), 'l d. m. Y') . "<br>";
+        $cinemas = $conn->query("SELECT DISTINCT cinema_name FROM Showtimes WHERE date = '$date[0]'");
+        while ($cinema = $cinemas->fetch(PDO::FETCH_NUM)) {
+            echo "<h2>$cinema[0]</h2>";
+            $films = $conn->query("SELECT DISTINCT name, release_year FROM Showtimes NATURAL INNER JOIN Films WHERE date = '$date[0]'
+                                    AND cinema_name='$cinema[0]'");
+            while ($film = $films->fetch(PDO::FETCH_NUM)) {
+                echo "<hr>$film[0], $film[1]</h3><br>";
+            }
+            echo "<br>";
+        }
+    }
+}
+
 if (isset($_POST["save"])) {
     try {
         $conn = OpenCon();
@@ -55,7 +72,17 @@ if (isset($_POST["save"])) {
         $url = "https://www.csfd.cz/kino/?district-filter=55";
         insertInTables($conn, $url);
     } catch (PDOException $e) {
-        //echo "here";
+        die('Connection failed: ' . $e->getMessage());
+    }
+    CloseCon($conn);
+}
+
+if (isset($_POST["print"])) {
+    try {
+        $conn = OpenCon();
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        printData($conn);
+    } catch (PDOException $e) {
         die('Connection failed: ' . $e->getMessage());
     }
     CloseCon($conn);
@@ -70,17 +97,12 @@ if (isset($_POST["save"])) {
 </head>
 <body>
 <form method="post">
-<input type="submit" onclick="showButton()" name="save" value="Uložit informace do databáze">
+<input type="submit" name="save" value="Uložit informace do databáze">
 <br><br>
-<div id="hidden" style="display:none;">
-	<input type="button" name="print" value="Zobrazit data z databáze">
-</div>
+<input type="submit" name="print" value="Zobrazit data z databáze">
+<br>
 </form>
 
-<script>
-function showButton() {
-	document.getElementById("hidden").style.display = "block";
-}
-</script>
 </body>
 </html>
+
