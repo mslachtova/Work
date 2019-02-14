@@ -48,6 +48,12 @@ function insertInTables($conn, $url) {
 }
 
 function printData($conn) {
+    try {
+        $conn->query("SELECT 1 FROM Showtimes LIMIT 1");
+        $conn->query("SELECT 1 FROM Films LIMIT 1");
+    } catch (Exception $e) {
+        return;
+    }
     $dates = $conn->query("SELECT DISTINCT date FROM Showtimes");
     while ($date = $dates->fetch(PDO::FETCH_NUM)) {
         echo date_format(date_create($date[0]), 'l d. m. Y') . "<br>";
@@ -105,4 +111,5 @@ if (isset($_POST["print"])) {
 
 </body>
 </html>
+
 
