@@ -19,64 +19,31 @@ function createTables($conn) {
     $conn->exec($sql);
 }
 
-function insertCinema($conn, $line, $line_with_cinema) {
-    if (!$line_with_cinema) {
-        return false;
+function insertFilm($conn, $film) {
+    list($name, $year) = explode(" (", rtrim($film->nodeValue, ")"));
+    $exists = $conn->prepare("SELECT film_id FROM Films WHERE name = '$name' AND release_year = $year;");
+    $exists->execute();
+    if ($exists->rowCount() == 0) {
+        $sql = "INSERT INTO Films (name, release_year) VALUES ('$name', $year)";
+        $conn->exec($sql);
+        return $conn->lastInsertId();
     }
-    $sql = "INSERT INTO Cinemas (name) VALUES ($line)";
-    $conn->exec($sql);
-    return true;
+    return $exists->fetch(PDO::FETCH_OBJ)->film_id;
 }
 
-function insertFilmAndUpdate($conn, $line, $last_cinema) {
-    $id_of_film = 0;
-    echo "HERE!<br>";
-    $exist = $conn->prepare("SELECT film_id FROM Films WHERE name = '$line';");
-    echo "HERE!<br>";
-    $exist->execute();
-    if ($exist->rowCount() == 0) {
-        $sql = "INSERT INTO Films (name) VALUES ($line)";
-        $conn->exec($sql);
-        $id_of_film = $conn->lastInsertId();
-    } else {
-        $get_id = $exist->fetch(PDO::FETCH_OBJ);
-        $id_of_film = $get_id->film_id;
-    }
-    $exist = $conn->prepare("SELECT * FROM Cinema_film WHERE
-                            cinema_id = '$last_cinema' AND film_id = '$id_of_film'");
-    $exist->execute();
-    if ($exist->rowCount() == 0) {
-        $sql = "INSERT INTO Cinema_film (cinema_id, film_id) VALUES ($last_cinema, $id_of_film)";
-        $conn->exec($sql);
-    }
-}
-
-function insertInTables($conn, $file) {
-    $line = fgets($file);
-    $date = explode(",", $line);
-    echo $line . "<br>";
-    $sql = "INSERT INTO Date (day, date) VALUES (?, ?)";
-    $sqlquery = $conn->prepare($sql);
-    $sqlquery->execute([$date[0], $date[1]]);
-    echo "HERE!<br>";
-    $line = fgets($file);
-    $sql = "INSERT INTO Cinema (name)
-                VALUES ($line)";
-    $conn->exec($sql);
-    $last_cinema = $conn->lastInsertId();
-    $line_with_cinema = false;
-    while(!feof($file)) {
-        $line = fgets($file);
-        if (insertCinema($conn, $line, $line_with_cinema)) {
-            $last_cinema = $conn->lastInsertId();
-            $line_with_cinema = false;
-        } else {
-            if ($line == "\n") {
-                $line_with_cinema = true;
-            } else {
-                insertFilmAndUpdate($conn, $line, $last_cinema);
-            }
+function insertInTables($conn, $url) {
+    list($date, $cinemas, $programs) = fillParameters($url);
+    $date_format = explode(" ", $date->nodeValue)[1];
+    $item_counter = 1;
+    foreach ($cinemas as $cinema) {
+        $films = $programs->item($item_counter)->getElementsByTagName("th");
+        foreach ($films as $film) {
+            $film_id = insertFilm($conn, $film);
+            $sql = "INSERT IGNORE INTO Showtimes (date, cinema_name, film_id)
+                    VALUES (STR_TO_DATE('$date_format', '%d.%m.%Y'), '$cinema->nodeValue', $film_id)";
+            $conn->exec($sql);
         }
+        $item_counter++;
     }
 }
 
@@ -86,21 +53,15 @@ if (isset($_POST["save"])) {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         createTables($conn);
         $url = "https://www.csfd.cz/kino/?district-filter=55";
-        $filename = "program.csv";
-        fillAFile($filename, $url);
-        $file = fopen($filename, "r");
-        insertInTables($conn, $file);
-        fclose($file);
-        
+        insertInTables($conn, $url);
     } catch (PDOException $e) {
-        echo "here";
+        //echo "here";
         die('Connection failed: ' . $e->getMessage());
     }
     CloseCon($conn);
 }
 
 ?>
-
 
 <!DOCTYPE HTML>
 <html>  
@@ -117,10 +78,8 @@ if (isset($_POST["save"])) {
 </form>
 
 <script>
-document.getElementById("download").style.display = "none";
 function showButton() {
 	document.getElementById("hidden").style.display = "block";
-	document.getElementById("download").style.display  = "none";
 }
 </script>
 </body>
