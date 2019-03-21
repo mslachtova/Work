@@ -13,3 +13,9 @@ session:
 
 services:
 	router: App\RouterFactory::createRouter
+	- App\Model\CustomerManager
+	
+database:
+	dsn: 'mysql:host=127.0.0.1;dbname=library'
+	user: root
+	password: NEWPASSWORD
