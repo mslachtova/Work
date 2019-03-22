@@ -8,12 +8,11 @@ abstract class DataManager
     use Nette\SmartObject;
     
     private $database;
-    private $tableName;
+    protected $tableName;
     
-    public function __construct(Nette\Database\Context $database, $tableName)
+    public function __construct(Nette\Database\Context $database)
     {
         $this->database = $database;
-        $this->tableName = $tableName;
     }
     
     public function create(array $data){
