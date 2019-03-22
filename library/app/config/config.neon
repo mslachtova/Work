@@ -14,6 +14,9 @@ session:
 services:
 	router: App\RouterFactory::createRouter
 	- App\Model\CustomerManager
+	- App\Model\BookManager
+	- App\Model\CommentManager
+	- App\Model\LoanManager
 	
 database:
 	dsn: 'mysql:host=127.0.0.1;dbname=library'
