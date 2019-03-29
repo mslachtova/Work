@@ -1,10 +1,9 @@
 {block content}
     <h1 n:block="title">Knižní katalog</h1>
-
-    {foreach $customers as $customer}
-    <div class="customer">
-        <div class="name">{$customer->name}</div>
-		<div class="surname">{$customer->surname}</div>
+		
+    {foreach $books as $book}
+    <div class="book">
+        <div class="title">{$book->title}</div>
     </div>
     {/foreach}
 {/block}
