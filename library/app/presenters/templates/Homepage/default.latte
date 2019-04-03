@@ -1,9 +1,3 @@
 {block content}
-    <h1 n:block="title">Knižní katalog</h1>
-		
-    {foreach $books as $book}
-    <div class="book">
-        <div class="title">{$book->title}</div>
-    </div>
-    {/foreach}
+<a n:href="Book:default">Muj odkaz na book presenter default action</a>
 {/block}
